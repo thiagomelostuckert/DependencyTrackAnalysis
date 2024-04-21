@@ -1,0 +1,14 @@
+{
+  "name": "circles",
+  "main": "index_main.js",
+  "version": "320.0.0",
+  "homepage": "https://observablehq.com/d/a86256e44bcacfff",
+  "author": {
+    "name": "Thiago Amaral",
+    "url": "https://observablehq.com/@75b7b6839a447ba5"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}

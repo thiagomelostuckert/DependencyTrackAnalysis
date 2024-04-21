@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dependency Track analysis</title>
+    <!-- Icon Fonts -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet" />
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="./dist/css/style.css" type="text/css" media="all" />
+
+</head>
+
+
+<body>
+
+
+    <section class="range-slider-wrapper">
+
+        <div class="range-slider-container">
+            
+            <center>
+                <h3> Please, select one or more systems to be analyzed.</h3>
+
+                <input type="text" id="filterInput" placeholder="Filter by name">
+                <select id="selectInput" multiple>
+                </select>
+            </center>
+            <div class="range-slider-block">
+                <div id="range-sliders" class="range-sliders">
+                    <div class="range-slider-group range-slider-group-red">
+                        <h2 class="range-label range-label-red">Exploit Prediction Scoring System (EPSS)</h2>
+                        <input type="range" min="0" max="100" value="50" data-color="#f00"
+                            class="range-slider range-slider-red" id="range-slider-red" />
+                        <input type="number" min="0" max="100" value="50" class="input-slider input-slider-red"
+                            id="input-slider-red" />
+                    </div>
+                </div>
+            </div>
+
+            <center> <button id="callApiButtonSankey">Analyze sankey!</button> 
+             <button id="callApiButtonCircles">Analyze circles!</button> </center>
+        </div>
+    </section>
+    <!-- Javascript Files -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="./dist/js/app.js"></script>
+
+    <br>
+    <br>
+
+
+    <script>
+
+        function callPythonAPISankey() {
+            const selectedOptions = Array.from(document.getElementById('selectInput').selectedOptions).map(option => option.value);
+            const epssScore = document.getElementById('input-slider-red').value;
+    
+            fetch('http://127.0.0.1:5000/analyze?selectedProjects=' + encodeURIComponent(JSON.stringify(selectedOptions)) + '&epssScore=' + encodeURIComponent(epssScore))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API Error!');
+                    }
+
+                    window.location.href = '/frontend/sankey/sankey.html';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                });
+        }
+
+        function callPythonAPICircles() {
+            const selectedOptions = Array.from(document.getElementById('selectInput').selectedOptions).map(option => option.value);
+            const epssScore = document.getElementById('input-slider-red').value;
+    
+            fetch('http://127.0.0.1:5000/analyze?selectedProjects=' + encodeURIComponent(JSON.stringify(selectedOptions)) + '&epssScore=' + encodeURIComponent(epssScore))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API Error!');
+                    }
+
+                    window.location.href = '/frontend/circles/circles.html';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                });
+        }
+
+        function loadCSVIntoSelect(csvPath) {
+            fetch(csvPath)
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.trim().split('\n');
+                    const select = document.getElementById('selectInput');
+
+                    rows.forEach(row => {
+                        const elements = row.split(',');
+
+                        elements.forEach(element => {
+                            console.log(element)
+                            const option = document.createElement('option');
+                            option.value = element.trim();
+                            option.textContent = element.trim();
+                            option.selected=true 
+                            select.appendChild(option);
+
+                        }
+                        )
+
+                    });
+                })
+                .catch(error => console.error('Error, could not load file:', error));
+        }
+
+        function filterSelect() {
+            const filterValue = document.getElementById('filterInput').value.toLowerCase();
+            const options = document.getElementById('selectInput').options;
+
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].textContent.toLowerCase();
+                if (text.includes(filterValue)) {
+                    options[i].style.display = '';
+                } else {
+                    options[i].style.display = 'none';
+                }
+            }
+        }
+
+
+        window.onload = function () {
+            loadCSVIntoSelect('../data/systems_names.csv');
+            document.getElementById('filterInput').addEventListener('input', filterSelect);
+            document.getElementById('callApiButtonSankey').addEventListener('click', callPythonAPISankey);
+            document.getElementById('callApiButtonCircles').addEventListener('click', callPythonAPICircles);
+
+        };
+    </script>
+
+</body>
+
+</html>
